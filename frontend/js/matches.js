@@ -23,14 +23,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const modalTitle = document.getElementById('modalTitle');
   const modalScoreSummary = document.getElementById('modalScoreSummary');
   const breakdownTableBody = document.getElementById('breakdownTableBody');
-
   let allMatches = [];
   let selectedMatch = null;
 
   // Check URL parameters for direct match selection from notification
   const urlParams = new URLSearchParams(window.location.search);
   const targetMatchId = urlParams.get('matchId');
-
+   // Member 3: Ownership verification form elements
+const ownershipVerificationSection = document.getElementById('ownershipVerificationSection');
+const ownershipVerificationForm = document.getElementById('ownershipVerificationForm');
+const verificationFormMessage = document.getElementById('verificationFormMessage');
+const submitVerificationAnswersBtn = document.getElementById('submitVerificationAnswersBtn');
   async function loadMatches() {
     container.innerHTML = '<p class="muted">Loading discovered matches…</p>';
     try {
@@ -348,6 +351,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Role-based action controls (Owner / Finder vs Authorized Campus Verifier)
     const currentUser = JSON.parse(localStorage.getItem('reclaimUser') || '{}');
     const isVerifier = currentUser.role === 'VERIFIER' || currentUser.role === 'ADMIN' || match.isVerifier;
+    // Member 3: Show ownership answers to the owner and authorized verifier
+if (ownershipVerificationSection && ownershipVerificationForm) {
+  const isOwner = Boolean(match.isOwner);
+  const canViewVerification = isOwner || isVerifier;
+  const answers = match.verificationAnswers || [];
+  const hasSubmittedAnswers = answers.length > 0;
+  const isClaimInProgress = match.status === 'CLAIM_IN_PROGRESS';
+
+  ownershipVerificationSection.style.display =
+    canViewVerification && isClaimInProgress ? 'block' : 'none';
+
+  ownershipVerificationForm.style.display =
+    isOwner && isClaimInProgress && !hasSubmittedAnswers ? 'block' : 'none';
+
+  const existingReview = document.getElementById('verificationAnswersReview');
+  if (existingReview) existingReview.remove();
+
+  if (hasSubmittedAnswers && (isOwner || isVerifier)) {
+    const review = document.createElement('div');
+    review.id = 'verificationAnswersReview';
+    review.style.cssText =
+      'margin-top:12px;padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;';
+
+    const heading = document.createElement('h4');
+    heading.textContent = 'Submitted Ownership Verification Answers';
+    heading.style.margin = '0 0 12px 0';
+    review.appendChild(heading);
+
+    answers.forEach((entry, index) => {
+      const question = document.createElement('p');
+      question.style.cssText = 'font-size:0.85rem;font-weight:700;margin:10px 0 4px;';
+      question.textContent = `${index + 1}. ${entry.question}`;
+
+      const answer = document.createElement('p');
+      answer.style.cssText = 'font-size:0.85rem;margin:0;color:#334155;';
+      answer.textContent = entry.answer;
+
+      review.appendChild(question);
+      review.appendChild(answer);
+    });
+
+    const submitted = document.createElement('p');
+    submitted.style.cssText = 'font-size:0.75rem;color:#64748b;margin:12px 0 0;';
+    submitted.textContent = match.verificationSubmittedAt
+      ? `Submitted: ${formatDate(match.verificationSubmittedAt)}`
+      : 'Answers submitted successfully.';
+
+    review.appendChild(submitted);
+    ownershipVerificationForm.insertAdjacentElement('afterend', review);
+  } else if (isOwner && isClaimInProgress) {
+    verificationFormMessage.textContent =
+      'Please answer all three questions and submit them for verifier review.';
+  }
+}
     const verifierActionGroup = document.getElementById('verifierActionGroup');
     const approveVerificationBtn = document.getElementById('approveVerificationBtn');
     const rejectVerificationBtn = document.getElementById('rejectVerificationBtn');
@@ -486,6 +543,82 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   closeModalBtn.addEventListener('click', closeModal);
   closeModalBtn2.addEventListener('click', closeModal);
+  // Member 3: Submit ownership verification answers
+if (ownershipVerificationForm) {
+  ownershipVerificationForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (!selectedMatch || !selectedMatch.isOwner) {
+      alert('Only the item owner can submit verification answers.');
+      return;
+    }
+
+    if (selectedMatch.status !== 'CLAIM_IN_PROGRESS') {
+      alert('Please initiate the claim before submitting answers.');
+      return;
+    }
+
+    const verificationAnswers = [
+      {
+        question: 'Describe a unique mark, scratch, sticker, or identifying feature of the item.',
+        answer: document.getElementById('verificationAnswer1').value.trim(),
+      },
+      {
+        question: 'Describe any contents, accessories, or attachments that belong with the item.',
+        answer: document.getElementById('verificationAnswer2').value.trim(),
+      },
+      {
+        question: 'Where and when did you last use or see the item?',
+        answer: document.getElementById('verificationAnswer3').value.trim(),
+      },
+    ];
+
+    if (verificationAnswers.some(entry => !entry.answer)) {
+      verificationFormMessage.textContent = 'Please answer all three questions.';
+      verificationFormMessage.style.color = '#dc2626';
+      return;
+    }
+
+    try {
+      submitVerificationAnswersBtn.disabled = true;
+      submitVerificationAnswersBtn.textContent = 'Submitting...';
+
+      const res = await API.request(
+        `/api/matches/${selectedMatch._id}/status`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            status: 'CLAIM_IN_PROGRESS',
+            verificationAnswers,
+          }),
+        }
+      );
+
+      if (!res.success || !res.match) {
+        throw new Error(res.message || 'Could not submit verification answers.');
+      }
+
+      const updatedMatch = res.match;
+      const index = allMatches.findIndex(m => m._id === updatedMatch._id);
+
+      if (index !== -1) {
+        allMatches[index] = updatedMatch;
+      }
+
+      selectedMatch = updatedMatch;
+      openModal(updatedMatch);
+
+      showMessage('Ownership verification answers submitted successfully!', 'success');
+
+    } catch (err) {
+      verificationFormMessage.textContent = err.message;
+      verificationFormMessage.style.color = '#dc2626';
+
+      submitVerificationAnswersBtn.disabled = false;
+      submitVerificationAnswersBtn.textContent = 'Submit Verification Answers';
+    }
+  });
+}
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });

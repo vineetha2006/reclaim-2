@@ -1,5 +1,8 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import { MongoClient } from "mongodb";
+import type { Db } from "mongodb";
+
 import {
   getDb,
   isAtlasConnected,
@@ -79,6 +82,11 @@ export interface MatchRecord {
   verifiedAt?: string;
   rejectionReason?: string;
   reclaimedAt?: string;
+    verificationAnswers?: {
+    question: string;
+    answer: string;
+  }[];
+  verificationSubmittedAt?: string;
   auditLog?: MatchAuditEntry[];
 }
 

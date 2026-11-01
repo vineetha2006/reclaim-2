@@ -116,6 +116,59 @@
                 </tbody>
             </table>
 
+            <!-- Member 3: Ownership Verification Form -->
+<div id="ownershipVerificationSection"
+     style="display:none;margin-top:20px;border-top:1px solid var(--line);padding-top:16px;">
+
+    <h3 style="font-size:1rem;margin-bottom:8px;">
+        Ownership Verification
+    </h3>
+
+    <p class="muted" style="font-size:0.85rem;margin-bottom:14px;">
+        Answer these questions with details only the genuine owner is likely to know.
+        Your answers will be reviewed by the campus verifier.
+    </p>
+
+    <form id="ownershipVerificationForm">
+
+        <div class="form-group" style="margin-bottom:14px;">
+            <label for="verificationAnswer1">
+                1. Describe a unique mark, scratch, sticker, or identifying feature of the item.
+            </label>
+            <textarea id="verificationAnswer1" rows="2"
+                      required maxlength="1000"
+                      placeholder="Enter the item's unique identifying details..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+            <label for="verificationAnswer2">
+                2. Describe any contents, accessories, or attachments that belong with the item.
+            </label>
+            <textarea id="verificationAnswer2" rows="2"
+                      required maxlength="1000"
+                      placeholder="Describe its contents or accessories..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+            <label for="verificationAnswer3">
+                3. Where and when did you last use or see the item?
+            </label>
+            <textarea id="verificationAnswer3" rows="2"
+                      required maxlength="1000"
+                      placeholder="Enter the approximate place and time..."></textarea>
+        </div>
+
+        <button type="submit" class="btn" id="submitVerificationAnswersBtn">
+            Submit Verification Answers
+        </button>
+
+        <p id="verificationFormMessage"
+           style="font-size:0.85rem;margin-top:10px;"
+           aria-live="polite"></p>
+
+    </form>
+</div>
+
             <!-- Audit Trail Section -->
             <div id="modalAuditSection" style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px;">
                 <h3 style="font-size:0.95rem;margin:0 0 10px 0;display:flex;align-items:center;gap:6px;">

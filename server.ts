@@ -759,6 +759,15 @@ async function populateMatch(match: MatchRecord, currentUserId?: string, userRol
     verifiedAt: match.verifiedAt,
     rejectionReason: match.rejectionReason,
     reclaimedAt: match.reclaimedAt,
+    // Member 3: Show verification answers only to the owner and verifier
+...(currentUserId === match.ownerId ||
+  userRole === 'VERIFIER' ||
+  userRole === 'ADMIN'
+  ? {
+      verificationAnswers: match.verificationAnswers || [],
+      verificationSubmittedAt: match.verificationSubmittedAt,
+    }
+  : {}),
     auditLog: match.auditLog || [],
     lostItem: lost ? jsonItem(lost) : null,
     foundItem: found ? jsonItem(found) : null,
@@ -880,6 +889,80 @@ app.patch('/api/matches/:id/status', requireAuth, async (req: AuthenticatedReque
     }
 
     const currentStatus = match.status;
+    // MEMBER 3: Save ownership verification answers
+const rawVerificationAnswers = req.body?.verificationAnswers;
+
+if (rawVerificationAnswers !== undefined) {
+  // Only the item owner can submit ownership answers
+  if (!isOwner) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only the item owner can submit ownership verification answers.',
+    });
+  }
+
+  // Answers can only be submitted while verification is in progress
+  if (currentStatus !== 'CLAIM_IN_PROGRESS' || status !== 'CLAIM_IN_PROGRESS') {
+    return res.status(400).json({
+      success: false,
+      message: 'Initiate the claim before submitting verification answers.',
+    });
+  }
+
+  if (
+    !Array.isArray(rawVerificationAnswers) ||
+    rawVerificationAnswers.length < 1 ||
+    rawVerificationAnswers.length > 5
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: 'Submit between 1 and 5 verification answers.',
+    });
+  }
+
+  const verificationAnswers = rawVerificationAnswers.map((entry: any) => ({
+    question: typeof entry.question === 'string' ? entry.question.trim().slice(0, 300) : '',
+    answer: typeof entry.answer === 'string' ? entry.answer.trim().slice(0, 1000) : '',
+  }));
+
+  if (verificationAnswers.some((entry: any) => !entry.question || !entry.answer)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Every verification question must have an answer.',
+    });
+  }
+
+  const now = new Date().toISOString();
+
+  const auditEntry: MatchAuditEntry = {
+    actorId: userId,
+    actorName: currentUser.name,
+    actorRole: userRole,
+    action: 'VERIFICATION_ANSWERS_SUBMITTED',
+    previousStatus: currentStatus,
+    newStatus: currentStatus,
+    timestamp: now,
+    note: 'Owner submitted ownership verification answers.',
+  };
+
+  const updatedMatch = await updateMatchStatus(
+    match._id,
+    currentStatus,
+    auditEntry,
+    {
+      verificationAnswers,
+      verificationSubmittedAt: now,
+    }
+  );
+
+  return res.json({
+    success: true,
+    message: 'Ownership verification answers submitted successfully.',
+    match: updatedMatch
+      ? await populateMatch(updatedMatch, userId, userRole)
+      : null,
+  });
+}
     if (currentStatus === status) {
       return res.json({
         success: true,

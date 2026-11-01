@@ -1,0 +1,204 @@
+
+.recovery-container {
+  width: 100%;
+  min-height: 70vh;
+  padding: 30px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #f5f7fb;
+  box-sizing: border-box;
+}
+
+.recovery-card {
+  width: 100%;
+  max-width: 750px;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+}
+
+.recovery-card h2 {
+  color: #172554;
+  margin-bottom: 12px;
+  font-size: 25px;
+}
+
+.recovery-card h3 {
+  color: #1e3a8a;
+}
+
+.recovery-card p {
+  color: #555;
+  line-height: 1.6;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0;
+}
+
+.form-group label,
+.recovery-card > label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #263449;
+}
+
+.form-group input,
+.form-group textarea,
+.recovery-card textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font-size: 15px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.recovery-card textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.recovery-card button {
+  padding: 12px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.recovery-card button:hover {
+  background: #1d4ed8;
+}
+
+.recovery-card button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.recovery-card button.reject-button {
+  background: #dc2626;
+}
+
+.recovery-card button.reject-button:hover {
+  background: #b91c1c;
+}
+
+.claim-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  background: #fafcff;
+}
+
+.answer-item {
+  padding: 10px;
+  margin: 10px 0;
+  background: #f1f5f9;
+  border-radius: 7px;
+}
+
+.status-box {
+  padding: 15px;
+  margin: 20px 0;
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+  border-radius: 6px;
+}
+
+.success-message {
+  color: #15803d !important;
+  background: #dcfce7;
+  padding: 12px;
+  border-radius: 7px;
+}
+
+.error-message {
+  color: #b91c1c !important;
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 7px;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 30px;
+  color: #2563eb;
+}
+
+.history-timeline {
+  margin-top: 25px;
+  border-left: 2px solid #2563eb;
+  padding-left: 22px;
+}
+
+.history-item {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -30px;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 3px solid #dbeafe;
+}
+
+.history-content {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.history-content h3 {
+  margin-top: 0;
+}
+
+.history-content small {
+  color: #64748b;
+}
+
+@media (max-width: 600px) {
+  .recovery-container {
+    padding: 15px 10px;
+  }
+
+  .recovery-card {
+    padding: 18px;
+  }
+
+  .recovery-card h2 {
+    font-size: 21px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .button-group button {
+    width: 100%;
+  }
+}
